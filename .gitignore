@@ -18,11 +18,6 @@ frontend/node_modules/
 # Uploads
 backend/uploads/
 
-# Generated JSON outputs
-backend/json_outputs/
-
-# Generated image outputs
-backend/image_outputs/
 
 # OS
 .DS_Store
