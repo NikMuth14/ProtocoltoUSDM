@@ -265,7 +265,7 @@ The JSON structure MUST follow this USDM format exactly:
             "timelineId": null,
             "timelineExitId": "<ScheduleTimelineExit id if this is the last instance, else null>",
             "activityIds": [
-              "<Activity_N ids for ALL activities/procedures marked (X) at this visit>"
+              "<actual activity/procedure names (not IDs) for ALL activities marked (X) at this visit, e.g. 'Informed consent', 'Vital signs', 'ECG'>"
             ],
             "encounterId": "<Encounter_N id for the visit/encounter this instance maps to>"
           }
@@ -283,7 +283,7 @@ The JSON structure MUST follow this USDM format exactly:
 CRITICAL RULES:
 - Extract EVERY row (activity/procedure) and EVERY column (visit/encounter) from the SOA table.
 - Each visit column becomes an Encounter. Each row becomes an Activity.
-- The ScheduledActivityInstance is the SOA grid cell mapping: its activityIds list contains ONLY the Activity IDs that are marked (X or equivalent) for that encounter/visit.
+- The ScheduledActivityInstance is the SOA grid cell mapping: its activityIds list contains the actual activity/procedure NAMES (not Activity_N IDs) that are marked (X or equivalent) for that encounter/visit. For example: ["Informed consent", "Vital signs", "ECG"] NOT ["Activity_1", "Activity_2", "Activity_3"].
 - Encounters must be linked sequentially via previousId/nextId.
 - Activities must be linked sequentially via previousId/nextId.
 - ACTIVITY CATEGORIES: SOA tables often have bold section headers or category rows (e.g. "Eligibility", "Study Administration", "Safety Assessments", "Laboratory Analyses", "Other") that group multiple child activities beneath them. These MUST be modeled as grouping activities:
@@ -304,8 +304,9 @@ CRITICAL RULES:
 - Output raw JSON only. No markdown formatting."""
 
 
+
 def find_soa_pages(pdf_path):
-    """Scan a PDF to identify pages that contain Schedule of Activities/Events/Assessments tables.
+    """Scan a PDF to identify pages that contain Schedule of Activities/Events/Assessments tables until the end of the document.
 
     Uses a two-pass approach:
     - Pass 1: Find pages with SOA keywords that also contain tables.
@@ -354,26 +355,53 @@ def find_soa_pages(pdf_path):
                         soa_pages.add(page_num)
                         break
 
-        # Include continuation pages: only if the next page is consecutive
-        # and has a table (likely a multi-page SOA table)
-        continuation_pages = set()
-        for pg in sorted(soa_pages):
-            next_pg = pg + 1
-            if next_pg <= total_pages and next_pg not in soa_pages:
-                next_page = pdf.pages[next_pg - 1]
-                next_text = (next_page.extract_text() or "").lower()
-                next_tables = next_page.extract_tables()
-                # Only add if it has a substantial table and no new section heading
-                has_big_table = next_tables and any(len(t) > 3 for t in next_tables)
-                is_new_section = any(
-                    heading in next_text
-                    for heading in ["table of contents", "list of tables", "synopsis",
-                                    "appendix", "references", "abbreviations"]
-                )
-                if has_big_table and not is_new_section:
-                    continuation_pages.add(next_pg)
-
-        soa_pages.update(continuation_pages)
+        # Include continuation pages iteratively until no more are found
+        # (handles multi-page SOA tables spanning 9+ pages)
+        while True:
+            continuation_pages = set()
+            for pg in sorted(soa_pages):
+                next_pg = pg + 1
+                if next_pg <= total_pages and next_pg not in soa_pages:
+                    next_page = pdf.pages[next_pg - 1]
+                    next_text = (next_page.extract_text() or "").lower()
+                    next_tables = next_page.extract_tables()
+                    # Only add if it has a substantial table and no new section heading
+                    has_big_table = next_tables and any(len(t) > 3 for t in next_tables)
+                    is_new_section = any(
+                        heading in next_text
+                        for heading in ["table of contents", "list of tables", "synopsis",
+                                        "appendix", "references", "abbreviations"]
+                    )
+                    if has_big_table and not is_new_section:
+                        continuation_pages.add(next_pg)
+            
+            if not continuation_pages:
+                break  # No more continuation pages found
+            soa_pages.update(continuation_pages)
+        
+        # Comprehensive trailing page scan: check ALL remaining pages after the last detected page
+        # to ensure no SOA content is missed (especially for tables with sparse trailing rows)
+        if soa_pages:
+            last_page = max(soa_pages)
+            for check_pg in range(last_page + 1, total_pages + 1):
+                if check_pg not in soa_pages:
+                    check_page = pdf.pages[check_pg - 1]
+                    check_text = (check_page.extract_text() or "").lower()
+                    check_tables = check_page.extract_tables()
+                    
+                    # Stop if we hit a clear section break
+                    is_new_section = any(
+                        heading in check_text
+                        for heading in ["table of contents", "list of tables", "synopsis",
+                                        "appendix", "references", "abbreviations", "signature"]
+                    )
+                    if is_new_section:
+                        break  # Stop scanning, we've hit a new section
+                    
+                    # Add page if it has a table (even small ones for trailing rows)
+                    has_table = check_tables and any(len(t) > 1 for t in check_tables)
+                    if has_table:
+                        soa_pages.add(check_pg)
 
     result = sorted(soa_pages)
     print(f"[SOA DETECT] Found SOA content on pages: {result}")
