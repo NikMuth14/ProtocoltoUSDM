@@ -265,7 +265,7 @@ The JSON structure MUST follow this USDM format exactly:
             "timelineId": null,
             "timelineExitId": "<ScheduleTimelineExit id if this is the last instance, else null>",
             "activityIds": [
-              "<actual activity/procedure names (not IDs) for ALL activities marked (X) at this visit, e.g. 'Informed consent', 'Vital signs', 'ECG'>"
+              "<For this visit column, scan EVERY row one by one from top to bottom. For each row, check if this visit's cell contains X, x, ✓, •, or any non-empty mark. If yes, include that row's activity name here. Do NOT skip any row. Result: list of activity names marked at this visit.>"
             ],
             "encounterId": "<Encounter_N id for the visit/encounter this instance maps to>"
           }
@@ -283,7 +283,8 @@ The JSON structure MUST follow this USDM format exactly:
 CRITICAL RULES:
 - Extract EVERY row (activity/procedure) and EVERY column (visit/encounter) from the SOA table.
 - Each visit column becomes an Encounter. Each row becomes an Activity.
-- The ScheduledActivityInstance is the SOA grid cell mapping: its activityIds list contains the actual activity/procedure NAMES (not Activity_N IDs) that are marked (X or equivalent) for that encounter/visit. For example: ["Informed consent", "Vital signs", "ECG"] NOT ["Activity_1", "Activity_2", "Activity_3"].
+- DIMENSIONAL CELL-BY-CELL SCANNING: For each ScheduledActivityInstance (visit column), you MUST scan every single row in the table from top to bottom independently. Treat each (row, column) cell as an individual unit. For each cell: if it contains X, x, ✓, •, a checkmark, a dot, or any non-empty mark — include that row's activity name in activityIds. Never skip a row. Never assume a row is empty without explicitly checking it.
+- The activityIds list contains the actual activity/procedure NAMES (not Activity_N IDs). For example: ["Informed consent", "Vital signs", "ECG"] NOT ["Activity_1", "Activity_2", "Activity_3"].
 - Encounters must be linked sequentially via previousId/nextId.
 - Activities must be linked sequentially via previousId/nextId.
 - ACTIVITY CATEGORIES: SOA tables often have bold section headers or category rows (e.g. "Eligibility", "Study Administration", "Safety Assessments", "Laboratory Analyses", "Other") that group multiple child activities beneath them. These MUST be modeled as grouping activities:
@@ -536,6 +537,185 @@ def call_vision_for_soa(page_images):
 MAX_PAGES_PER_VISION_CALL = 5  # Claude Vision limit for reliable processing
 
 
+def _generate_readme_summary(soa_json, json_path):
+    """Generate a longform markdown README validation summary from the USDM JSON.
+
+    Creates a per-visit listing of all activities so reviewers can validate
+    the extraction at a glance without parsing a wide matrix table.
+
+    Args:
+        soa_json: The extracted USDM JSON dict.
+        json_path: Path to the saved JSON file (used to derive README path).
+
+    Returns:
+        str: Path to the saved README file.
+    """
+    sd = soa_json.get("studyDesign", {})
+    encounters = sd.get("encounters", [])
+    activities = sd.get("activities", [])
+    timelines = sd.get("scheduleTimelines", [])
+    epochs = sd.get("epochs", [])
+    footnotes = soa_json.get("footnotes", [])
+
+    # Build encounter lookup: id -> encounter
+    enc_lookup = {e["id"]: e for e in encounters}
+
+    # Build epoch lookup: id -> epoch
+    epoch_lookup = {ep["id"]: ep for ep in epochs}
+
+    # Collect all instances across timelines, keyed by encounterId
+    enc_to_instance = {}
+    for tl in timelines:
+        for inst in tl.get("instances", []):
+            enc_id = inst.get("encounterId", "")
+            enc_to_instance[enc_id] = inst
+
+    # Collect all leaf activity names in order
+    all_activity_names = []
+    seen = set()
+    for act in activities:
+        if not act.get("childIds") and act.get("name") and act["name"] not in seen:
+            all_activity_names.append(act["name"])
+            seen.add(act["name"])
+
+    # Build category map: child activity name -> category name
+    child_to_category = {}
+    for act in activities:
+        if act.get("childIds"):
+            cat_name = act.get("name", "")
+            for cid in act["childIds"]:
+                child = next((a for a in activities if a["id"] == cid), None)
+                if child:
+                    child_to_category[child.get("name", cid)] = cat_name
+
+    # Group encounters by epoch
+    epoch_to_encounters = {}
+    for enc in encounters:
+        inst = enc_to_instance.get(enc["id"], {})
+        epoch_id = inst.get("epochId", "")
+        epoch_to_encounters.setdefault(epoch_id, []).append(enc)
+
+    # Start building markdown
+    lines = []
+    study_name = sd.get("name", sd.get("label", "Unknown Study"))
+    lines.append(f"# SOA Validation Summary")
+    lines.append(f"## {study_name}")
+    lines.append("")
+    lines.append(f"**Source file:** `{os.path.basename(json_path) if json_path else 'N/A'}`  ")
+    lines.append(f"**Total Visits/Encounters:** {len(encounters)}  ")
+    lines.append(f"**Total Activities:** {len(all_activity_names)} leaf activities across {len(activities)} total  ")
+    lines.append(f"**Epochs:** {len(epochs)}  ")
+    lines.append("")
+    lines.append("---")
+    lines.append("")
+
+    # Epoch overview
+    if epochs:
+        lines.append("## Study Epochs")
+        lines.append("")
+        for ep in epochs:
+            enc_count = len(epoch_to_encounters.get(ep["id"], []))
+            lines.append(f"### {ep.get('label', ep.get('name', ''))}")
+            lines.append(f"- **Name:** {ep.get('name', '')}")
+            lines.append(f"- **Description:** {ep.get('description', '-')}")
+            lines.append(f"- **Visits in this epoch:** {enc_count}")
+            lines.append("")
+
+    lines.append("---")
+    lines.append("")
+
+    # Per-visit longform listing
+    lines.append("## Visit-by-Visit Activity Listing")
+    lines.append("")
+
+    for enc in encounters:
+        enc_id = enc["id"]
+        inst = enc_to_instance.get(enc_id, {})
+        epoch_id = inst.get("epochId", "")
+        epoch = epoch_lookup.get(epoch_id, {})
+        epoch_label = epoch.get("label", epoch.get("name", "Unknown Epoch"))
+
+        enc_label = enc.get("label", enc.get("name", ""))
+        enc_desc = enc.get("description", "")
+        act_names = inst.get("activityIds", [])
+
+        heading = f"### {enc_label}"
+        if enc_desc and enc_desc != "-":
+            heading += f" — {enc_desc}"
+        lines.append(heading)
+        lines.append(f"**Epoch:** {epoch_label}  ")
+        lines.append(f"**Activities scheduled ({len(act_names)}):**  ")
+        lines.append("")
+
+        if act_names:
+            # Group by category if available
+            categorised = {}
+            uncategorised = []
+            for name in act_names:
+                cat = child_to_category.get(name)
+                if cat:
+                    categorised.setdefault(cat, []).append(name)
+                else:
+                    uncategorised.append(name)
+
+            if categorised:
+                for cat_name, cat_acts in categorised.items():
+                    lines.append(f"**{cat_name}**")
+                    for a in cat_acts:
+                        lines.append(f"- {a}")
+                    lines.append("")
+                if uncategorised:
+                    lines.append("**Other**")
+                    for a in uncategorised:
+                        lines.append(f"- {a}")
+                    lines.append("")
+            else:
+                for a in act_names:
+                    lines.append(f"- {a}")
+                lines.append("")
+        else:
+            lines.append("_No activities recorded for this visit._")
+            lines.append("")
+
+    lines.append("---")
+    lines.append("")
+
+    # All activities reference list
+    lines.append("## All Activities Reference")
+    lines.append("")
+    if child_to_category:
+        current_cat = None
+        for name in all_activity_names:
+            cat = child_to_category.get(name, "Uncategorised")
+            if cat != current_cat:
+                lines.append(f"### {cat}")
+                current_cat = cat
+            lines.append(f"- {name}")
+        lines.append("")
+    else:
+        for name in all_activity_names:
+            lines.append(f"- {name}")
+        lines.append("")
+
+    # Footnotes
+    if footnotes:
+        lines.append("---")
+        lines.append("")
+        lines.append("## Footnotes")
+        lines.append("")
+        for i, fn in enumerate(footnotes, 1):
+            lines.append(f"{i}. {fn}")
+        lines.append("")
+
+    # Save README
+    readme_content = "\n".join(lines)
+    readme_path = json_path.replace(".json", "_README.md") if json_path else os.path.join(JSON_OUTPUT_DIR, "README.md")
+    with open(readme_path, "w", encoding="utf-8") as f:
+        f.write(readme_content)
+
+    return readme_path
+
+
 def extract_soa_from_pdf(pdf_path):
     """Full pipeline: PDF → detect SOA pages → render as images → Claude Vision → structured JSON.
 
@@ -650,6 +830,13 @@ def extract_soa_from_pdf(pdf_path):
         print(f"[EXTRACT SOA] Step 4 complete: JSON saved to {saved_path}")
     except Exception as save_err:
         print(f"[WARN] Failed to save JSON file: {save_err}")
+
+    # Step 5: Generate README validation summary
+    try:
+        readme_path = _generate_readme_summary(soa_json, saved_path)
+        print(f"[EXTRACT SOA] Step 5 complete: README saved to {readme_path}")
+    except Exception as readme_err:
+        print(f"[WARN] Failed to generate README: {readme_err}")
 
     # Build lightweight image list for API response
     page_images_for_response = [
