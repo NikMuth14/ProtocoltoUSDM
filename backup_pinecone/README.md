@@ -4,7 +4,13 @@ Extract Schedule of Assessments (SOA), Schedule of Events (SOE), and Schedule of
 
 ---
 
-## How It Works
+## Extraction Methods
+
+### 1. Automated Vision Extraction (Recommended)
+
+Fully automated pipeline that detects SOA tables inside a PDF, renders them as images, and uses Claude Vision to extract structured JSON.
+
+#### How It Works
 
 1. **SOA Page Detection** — The PDF is scanned page-by-page using `pdfplumber`. Pages are identified as SOA content when they contain both an SOA keyword (e.g., "schedule of assessments", "schedule of events") and a table with 3+ rows. A secondary check catches pages with tables containing 4+ SOA-specific indicators (e.g., "screening", "baseline", "visit").
 2. **Continuation Page Detection** — Pages immediately following a detected SOA page are included if they contain a substantial table (likely a multi-page SOA).
@@ -18,7 +24,7 @@ Extract Schedule of Assessments (SOA), Schedule of Events (SOE), and Schedule of
 5. **Result Merging** — If multiple batches are processed, tables and visits are merged and visit IDs are re-numbered sequentially.
 6. **JSON Output** — The structured JSON is saved to `backend/json_outputs/` and returned to the frontend.
 
-## Output JSON Structure
+#### Output JSON Structure
 
 ```json
 {
@@ -51,13 +57,39 @@ Extract Schedule of Assessments (SOA), Schedule of Events (SOE), and Schedule of
 }
 ```
 
-## Usage
+#### Usage
 
 1. Open http://localhost:3000
-2. Upload a clinical trial protocol PDF (drag & drop or browse)
-3. Click **"Extract SOA from PDF"**
-4. View the extracted tables, visit details, and full JSON
-5. Use **Copy JSON** or **Download JSON** to export
+2. Navigate to the **Image Extract** tab
+3. Upload a clinical trial protocol PDF (drag & drop or browse)
+4. Click **"Extract SOA from PDF"**
+5. View the extracted tables, visit details, and full JSON
+6. Use **Copy JSON** or **Download JSON** to export
+
+---
+
+### 2. RAG-Based Chat Extraction
+
+Uses vector search and LLM reconstruction for interactive SOA extraction via chat.
+
+#### How It Works
+
+1. **PDF Text Extraction** — The uploaded PDF is parsed page-by-page using `pdfplumber` to extract all text content.
+2. **Chunking** — Extracted text is split into overlapping chunks (500 characters, 100 overlap) to maintain context across chunk boundaries.
+3. **Embedding** — Each chunk is embedded into a 1024-dimensional vector using AWS Bedrock's Titan Embed Text V2 model.
+4. **Vector Storage** — Embeddings and metadata are stored in a Pinecone serverless index.
+5. **Two-Phase Retrieval** — Semantic search identifies SOA pages, then all chunks from those pages are fetched.
+6. **LLM Reconstruction** — Retrieved chunks are passed to Claude, which reconstructs the SOA table in HTML format.
+
+#### Usage
+
+1. Open http://localhost:3000
+2. Upload a PDF via the **Ingest** tab
+3. Navigate to the **Chat** tab
+4. Ask the chatbot to print the SOA table (e.g., "Print the Schedule of Assessments")
+5. The full table is rendered in HTML — use the **Copy** button to grab the content
+
+---
 
 ## Setup
 
@@ -81,6 +113,7 @@ Frontend runs on http://localhost:3000
 
 Create a `backend/.env` file with:
 ```
+PINECONE_API_KEY=your_pinecone_api_key
 AWS_ACCESS_KEY_ID=your_aws_access_key
 AWS_SECRET_ACCESS_KEY=your_aws_secret_key
 AWS_REGION=us-east-1
@@ -91,13 +124,14 @@ AWS_REGION=us-east-1
 | Endpoint | Method | Description |
 |---|---|---|
 | `/api/health` | GET | Health check |
+| `/api/ingest` | POST | Upload and ingest a PDF into Pinecone |
+| `/api/query` | POST | Query raw chunks from Pinecone |
+| `/api/chat` | POST | Chat with the LLM to extract tables (RAG) |
 | `/api/extract-soa` | POST | Upload a PDF → auto-detect SOA → extract JSON (Vision) |
 
 ## Tech Stack
 - **Backend**: Python, Flask, pdfplumber, Pillow
-- **LLM**: AWS Bedrock — Claude Sonnet 4.5 (Vision)
-- **Frontend**: React, Axios
-
-## Backup
-
-The previous Pinecone/RAG-based extraction approach (ingest, query, chat endpoints) is preserved in `backup_pinecone/`.
+- **Vector DB**: Pinecone (serverless, cosine similarity)
+- **Embeddings**: AWS Bedrock — Titan Embed Text V2 (1024 dimensions)
+- **LLM**: AWS Bedrock — Claude Sonnet 4.5 (text + vision)
+- **Frontend**: React, Axios, React Router

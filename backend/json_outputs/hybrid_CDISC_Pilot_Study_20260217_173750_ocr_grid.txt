@@ -1,0 +1,65 @@
+TABLE DIMENSIONS: 60 rows x 10 columns
+
+HEADER ROW (row 0):
+[col0]  | [col1] VISIT | [col2] 1 | [col3] 2 | [col4] 3 | [col5] 4 | [col6] 5 | [col7]  | [col8] 7 | [col9] 8
+
+DATA ROWS:
+  Row 1: [col0] ACTIVITY | [col1] WEEK | [col2] -2 | [col3] -.3 | [col4] 0 | [col5] 2 | [col6] 4 | [col7] (empty) | [col8] 6 | [col9] 8
+  Row 2: [col0] Informed consent | [col1] (empty) | [col2] X | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty) | [col9] (empty)
+  Row 3: [col0] Patient number assigned | [col1] (empty) | [col2] X | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty) | [col9] (empty)
+  Row 4: [col0] Hachinski ≤4 | [col1] (empty) | [col2] X | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty) | [col9] (empty)
+  Row 5: [col0] MMSE 10-23 | [col1] (empty) | [col2] X | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty) | [col9] (empty)
+  Row 6: [col0] Physical examination | [col1] (empty) | [col2] X | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty) | [col9] (empty)
+  Row 7: [col0] Medical History | [col1] (empty) | [col2] X | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty) | [col9] (empty)
+  Row 8: [col0] Habits | [col1] (empty) | [col2] X | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty) | [col9] (empty)
+  Row 9: [col0] Chest x-ray | [col1] (empty) | [col2] X | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty) | [col9] (empty)
+  Row 10: [col0] Apo E genotyping | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] (empty) | [col5] X | [col6] (empty) | [col7] (empty) | [col8] (empty) | [col9] (empty)
+  Row 11: [col0] Patient randomized | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] X | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty) | [col9] (empty)
+  Row 12: [col0] Vital signs/Temperature | [col1] (empty) | [col2] X | [col3] X | [col4] X | [col5] X | [col6] X | [col7] (empty) | [col8] X | [col9] X
+  Row 13: [col0] Ambulatory ECG placed | [col1] (empty) | [col2] (empty) | [col3] X | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty) | [col9] (empty)
+  Row 14: [col0] Ambulatory ECG removed | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] X | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty) | [col9] (empty)
+  Row 15: [col0] ECG | [col1] (empty) | [col2] X | [col3] (empty) | [col4] (empty) | [col5] X | [col6] X | [col7] (empty) | [col8] X | [col9] X
+  Row 16: [col0] Placebo TTS test | [col1] (empty) | [col2] X | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty) | [col9] (empty)
+  Row 17: [col0] CT Scan (if not within last year and patient passes all other screens) | [col1] (empty) | [col2] X | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty) | [col9] (empty)
+  Row 18: [col0] Concomitant Medications | [col1] (empty) | [col2] X | [col3] (empty) | [col4] X | [col5] X | [col6] X | [col7] (empty) | [col8] X | [col9] X
+  Row 19: [col0] Laboratory (Chem/Hemat): | [col1] (empty) | [col2] X | [col3] (empty) | [col4] (empty) | [col5] X | [col6] X | [col7] (empty) | [col8] X | [col9] X
+  Row 20: [col0] Laboratory (Urinalysis) | [col1] (empty) | [col2] X | [col3] (empty) | [col4] (empty) | [col5] X | [col6] (empty) | [col7] (empty) | [col8] (empty) | [col9] (empty)
+  Row 21: [col0] Plasma Specimen (Xanomeline) | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] X | [col5] X | [col6] X | [col7] (empty) | [col8] X | [col9] (empty)
+  Row 22: [col0] Hemoglobin A1C | [col1] (empty) | [col2] Xa | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty) | [col9] (empty)
+  Row 23: [col0] Study drug record / Medications dispensed / Medications returned | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] X | [col5] X | [col6] X | [col7] (empty) | [col8] X | [col9] X
+  Row 24: [col0] TTS Acceptability Survey | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty) | [col9] (empty)
+  Row 25: [col0] ADAS-Cog | [col1] (empty) | [col2] P | [col3] (empty) | [col4] X | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty) | [col9] X
+  Row 26: [col0] CIBIC+ | [col1] (empty) | [col2] P | [col3] (empty) | [col4] X | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty) | [col9] X
+  Row 27: [col0] DAD | [col1] (empty) | [col2] P | [col3] (empty) | [col4] X | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty) | [col9] X
+  Row 28: [col0] NPI-X | [col1] (empty) | [col2] P | [col3] (empty) | [col4] X | [col5] X | [col6] X | [col7] (empty) | [col8] X | [col9] Xb
+  Row 29: [col0] Adverse events | [col1] (empty) | [col2] X | [col3] X | [col4] X | [col5] X | [col6] X | [col7] (empty) | [col8] X | [col9] X
+  Row 30: [col0] (empty) | [col1] VISIT | [col2] 9 | [col3] 10 | [col4] 11 | [col5] 12 | [col6] 13 | [col7] ET | [col8] RT
+  Row 31: [col0] ACTIVITY | [col1] WEEK | [col2] 12 | [col3] 16 | [col4] 20 | [col5] 24 | [col6] 26 | [col7] (empty) | [col8] (empty)
+  Row 32: [col0] Informed consent | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty)
+  Row 33: [col0] Patient number assigned | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty)
+  Row 34: [col0] Hachinski ≤4 | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty)
+  Row 35: [col0] MMSE 10-23 | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty)
+  Row 36: [col0] Physical examination | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] X | [col7] X | [col8] (empty)
+  Row 37: [col0] Medical History | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty)
+  Row 38: [col0] Habits | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty)
+  Row 39: [col0] Chest x-ray | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty)
+  Row 40: [col0] Apo E genotyping | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty)
+  Row 41: [col0] Patient randomized | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty)
+  Row 42: [col0] Vital signs/Temperature | [col1] (empty) | [col2] X | [col3] X | [col4] X | [col5] X | [col6] X | [col7] X | [col8] X
+  Row 43: [col0] Ambulatory ECG placed | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty)
+  Row 44: [col0] Ambulatory ECG removed | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty)
+  Row 45: [col0] ECG | [col1] (empty) | [col2] X | [col3] X | [col4] X | [col5] X | [col6] X | [col7] X | [col8] (empty)
+  Row 46: [col0] Placebo TTS test | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty)
+  Row 47: [col0] CT Scan (if not within last year and patient passes all other screens) | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty)
+  Row 48: [col0] Concomitant Medications | [col1] (empty) | [col2] X | [col3] X | [col4] X | [col5] X | [col6] X | [col7] X | [col8] X
+  Row 49: [col0] Laboratory (Chem/Hemat): | [col1] (empty) | [col2] X | [col3] X | [col4] X | [col5] X | [col6] X | [col7] X | [col8] (empty)
+  Row 50: [col0] Laboratory (Urinalysis) | [col1] (empty) | [col2] X | [col3] (empty) | [col4] (empty) | [col5] X | [col6] (empty) | [col7] X | [col8] (empty)
+  Row 51: [col0] Plasma Specimen (Xanomeline) | [col1] (empty) | [col2] X | [col3] (empty) | [col4] X | [col5] (empty) | [col6] (empty) | [col7] X | [col8] (empty)
+  Row 52: [col0] Hemoglobin A1c | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] (empty) | [col7] (empty) | [col8] (empty)
+  Row 53: [col0] Study drug record / Medications dispensed / Medications returned | [col1] (empty) | [col2] X | [col3] X | [col4] X | [col5] X | [col6] X | [col7] X | [col8] (empty)
+  Row 54: [col0] TTS Acceptability Survey | [col1] (empty) | [col2] (empty) | [col3] (empty) | [col4] (empty) | [col5] (empty) | [col6] X | [col7] X | [col8] (empty)
+  Row 55: [col0] ADAS-Cog | [col1] (empty) | [col2] (empty) | [col3] X | [col4] (empty) | [col5] X | [col6] (empty) | [col7] X | [col8] X
+  Row 56: [col0] CIBIC+ | [col1] (empty) | [col2] (empty) | [col3] X | [col4] (empty) | [col5] X | [col6] (empty) | [col7] X | [col8] X
+  Row 57: [col0] DAD | [col1] (empty) | [col2] (empty) | [col3] X | [col4] (empty) | [col5] X | [col6] (empty) | [col7] X | [col8] X
+  Row 58: [col0] NPI-X | [col1] (empty) | [col2] Xb | [col3] Xb | [col4] Xb | [col5] X | [col6] X | [col7] X | [col8] X
+  Row 59: [col0] Adverse events | [col1] (empty) | [col2] X | [col3] X | [col4] X | [col5] X | [col6] X | [col7] X | [col8] X
